@@ -296,7 +296,7 @@ def create_case_pop_df(
                 pop_fips_col='fips',
                 case_fips_col='countyFIPS',
                 case_county_col='County Name',
-                case_state_col='state'
+                case_state_col='State'
     
       ):
     # Population Data at county level
@@ -330,7 +330,10 @@ def create_case_pop_df(
     append_list = []
     for n, g in cases_pop_df.groupby('County_State'):
         g.sort_values(date_col, inplace=True)
-        g['new_cases'] = g[cum_cases_col].diff()
+        g['new_cases'] = g[cum_cases_col].diff().rolling(7,
+            win_type='gaussian',
+            min_periods=1,
+            center=True).mean(std=2).round()
         g['active_cases'] = g[cum_cases_col] - g[cum_cases_col].shift(14).fillna(0)
         append_list.append(g)
     cases_pop_df = pd.concat(append_list)
@@ -481,31 +484,31 @@ if __name__ == '__main__':
 
     print ('Completed....')
 
-    print ('Combining Files...')
+    # print ('Combining Files...')
 
-    ## Combining them all
-    df_list = []
-    for f in map(lambda x: OUTPUT_PATH+x, os.listdir(OUTPUT_PATH)):
-        if f'rt_{label}_' in f:
-            df_list.append(pd.read_csv(f))
-    rt_df = pd.concat(df_list)
+    # ## Combining them all
+    # df_list = []
+    # for f in map(lambda x: OUTPUT_PATH+x, os.listdir(OUTPUT_PATH)):
+    #     if f'rt_{label}_' in f:
+    #         df_list.append(pd.read_csv(f))
+    # rt_df = pd.concat(df_list)
 
-    if not STATE_LEVEL:
-        fips_mapping = cases_pop_df[['countyFIPS', 'County_State']].drop_duplicates()\
-            .set_index('County_State').to_dict()['countyFIPS']
-        state_mapping = cases_pop_df[['state', 'County_State']].drop_duplicates()\
-            .set_index('County_State').to_dict()['state']
-        county_mapping = cases_pop_df[['county', 'County_State']].drop_duplicates()\
-            .set_index('County_State').to_dict()['county']
+    # if not STATE_LEVEL:
+    #     fips_mapping = cases_pop_df[['countyFIPS', 'County_State']].drop_duplicates()\
+    #         .set_index('County_State').to_dict()['countyFIPS']
+    #     state_mapping = cases_pop_df[['state', 'County_State']].drop_duplicates()\
+    #         .set_index('County_State').to_dict()['state']
+    #     county_mapping = cases_pop_df[['county', 'County_State']].drop_duplicates()\
+    #         .set_index('County_State').to_dict()['county']
 
     
-        rt_df['countyFIPS'] = rt_df['region'].map(fips_mapping)
-        rt_df['state'] = rt_df['region'].map(state_mapping)
-        rt_df['county'] = rt_df['region'].map(county_mapping)
+    #     rt_df['countyFIPS'] = rt_df['region'].map(fips_mapping)
+    #     rt_df['state'] = rt_df['region'].map(state_mapping)
+    #     rt_df['county'] = rt_df['region'].map(county_mapping)
 
 
-    rt_df.to_csv(output_file)
-    del rt_df
-    gc.collect()    
+    # rt_df.to_csv(output_file)
+    # del rt_df
+    # gc.collect()    
 
     
