@@ -56,4 +56,6 @@ MANIFEST
 data/*csv
 *.pickle
 .ipynb_checkpoints/*
+data/misc/stat*
+output/*
 

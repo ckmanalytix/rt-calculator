@@ -76,3 +76,69 @@ def get_county_avg_household_size():
     r = requests.post(q)
     county_household = {int(data['FipsCode']):round(data['TotalAmount']) for data in r.json()['DataValues'] }
     return county_household
+
+
+def load_uk_population_df(population_df_path):
+    '''
+    Parameters:
+    -----------
+    population_df_path : str
+
+    Returns:
+    ------------
+    uk_pop_df : pd.DataFrame
+    '''
+    uk_pop_df = pd.read_excel(population_df_path, header=4, sheet_name='MYE2 - Persons')
+    uk_pop_df = uk_pop_df[['Code', 'Name', 'All ages']].rename({'Code':'areaCode', 
+                                                                'Name':'areaName', 
+                                                                'All ages':'population'}, axis=1)
+    uk_pop_df['areaName'] = uk_pop_df['areaName'].str.title()
+    return uk_pop_df
+
+
+def load_uk_confirmed_cases_df(
+    case_address='https://coronavirus.data.gov.uk/downloads/json/coronavirus-cases_latest.json'):
+    '''
+    Parameters:
+    -----------
+    case_address : str
+
+    Returns:
+    ------------
+    cases_df : pd.DataFrame
+    '''
+    # download data
+    q = requests.get(case_address)
+    raw_uk_case_df = pd.DataFrame(q.json()['ltlas'])
+    # subset columns
+    uk_case_df = raw_uk_case_df[['areaCode', 'areaName', 'specimenDate', 'totalLabConfirmedCases']]
+    # format date type
+    uk_case_df['specimenDate'] = pd.to_datetime(uk_case_df['specimenDate'])
+    # get min/max case dates
+    case_max_date = uk_case_df['specimenDate'].max()    
+    case_min_date = uk_case_df['specimenDate'].min()
+    # fill in missing dates
+    cases_df = uk_case_df.groupby('areaCode') \
+                         .apply(filling_missing_dates, min_date=case_min_date, max_date=case_max_date ) \
+                         .reset_index(drop=True)
+    return cases_df
+                    
+
+def filling_missing_dates(s, min_date=None, max_date=None, 
+                          date_col='specimenDate', bfill_col_list=['areaCode','areaName'], 
+                          val_col='totalLabConfirmedCases'):
+    if (min_date is None) and (max_date is None):
+        idx = pd.date_range(s[date_col].min(), s[date_col].max())
+    else:
+        idx = pd.date_range(min_date, max_date)
+    s.index = pd.DatetimeIndex(s[date_col])
+    s = s.reindex(idx)
+    s[date_col] = s.index
+    for col in bfill_col_list:
+        s[col] = s[col].bfill()
+        
+    s[val_col].loc[(s[val_col].isna()) \
+                   & (s[date_col]==min_date)] = 0
+    s[val_col] = s[val_col].fillna(method='ffill')
+    return s
+

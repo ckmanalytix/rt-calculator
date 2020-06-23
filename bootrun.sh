@@ -27,8 +27,11 @@ python runtime.py --tot_pipelines ${TOT_PIPELINES} --pipeline_index ${PIPELINE_I
 # python generate_rt.py  --output_path='../data/rt_county/'
 
 ## Combining the files into a consolidated file for Simulation Use
-python rt_combine.py --files_path='../data/rt_state/' --state_level
-python rt_combine.py --files_path='../data/rt_county/'
+python generate_rt_combine.py --files_path='../data/rt_state/' --state_level
+python generate_rt_combine.py --files_path='../data/rt_county/'
+
+## Create output plots
+python generate_plots.py --rt_county_file_path='../data/rt_county/rt_county.csv'
 
 # copy outputs to local staging directory
 mkdir ${OUT_DIR}/rt_county/

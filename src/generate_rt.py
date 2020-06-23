@@ -36,6 +36,7 @@ import sys
 sys.path.append('../')
 
 from src.utils.load_data import load_population_df, load_confirmed_cases_df 
+from src.utils.p_delay_default import P_DELAY
 
 import argparse
 import subprocess
@@ -131,7 +132,7 @@ def calc_p_delay(onset_confirm_path):
 
     return p_delay
 
-def confirmed_to_onset(confirmed, p_delay):
+def confirmed_to_onset(confirmed, p_delay=P_DELAY):
     '''
     Function used to model the gap between test confirmation
     and probabilistic onset of Covid Virus.
@@ -157,7 +158,7 @@ def confirmed_to_onset(confirmed, p_delay):
     return onset
 
 
-def adjust_onset_for_right_censorship(onset, p_delay):
+def adjust_onset_for_right_censorship(onset, p_delay=P_DELAY):
     cumulative_p_delay = p_delay.cumsum()
     
     # Calculate the additional ones needed so shapes match
@@ -280,7 +281,8 @@ def create_and_run_model(name,
             county_state,
             case_col='new_cases', 
             cores=4,
-            chains=1
+            chains=1,
+            p_delay=P_DELAY
             ):
     confirmed = county_state[case_col].dropna()
     onset = confirmed_to_onset(confirmed, p_delay)
@@ -381,7 +383,8 @@ def regional_rt_model(subset_df,
                 case_col,
                 cores=cores
                 )
-        except:
+        except Exception as e:
+            print (f"\t{region}: Error: {str(e)}")
             err_list.append(region)
 
     gc.collect()
@@ -484,31 +487,5 @@ if __name__ == '__main__':
 
     print ('Completed....')
 
-    # print ('Combining Files...')
-
-    # ## Combining them all
-    # df_list = []
-    # for f in map(lambda x: OUTPUT_PATH+x, os.listdir(OUTPUT_PATH)):
-    #     if f'rt_{label}_' in f:
-    #         df_list.append(pd.read_csv(f))
-    # rt_df = pd.concat(df_list)
-
-    # if not STATE_LEVEL:
-    #     fips_mapping = cases_pop_df[['countyFIPS', 'County_State']].drop_duplicates()\
-    #         .set_index('County_State').to_dict()['countyFIPS']
-    #     state_mapping = cases_pop_df[['state', 'County_State']].drop_duplicates()\
-    #         .set_index('County_State').to_dict()['state']
-    #     county_mapping = cases_pop_df[['county', 'County_State']].drop_duplicates()\
-    #         .set_index('County_State').to_dict()['county']
-
-    
-    #     rt_df['countyFIPS'] = rt_df['region'].map(fips_mapping)
-    #     rt_df['state'] = rt_df['region'].map(state_mapping)
-    #     rt_df['county'] = rt_df['region'].map(county_mapping)
-
-
-    # rt_df.to_csv(output_file)
-    # del rt_df
-    # gc.collect()    
 
     

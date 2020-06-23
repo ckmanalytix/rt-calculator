@@ -31,8 +31,41 @@ from utils.state_abbreviations import state_abbr_map, state_abbr_map_r
 from generate_rt import create_case_pop_df
 
 
-RT_COUNTY_DATA = '../../data/rt_county/rt_county.csv'
-RT_STATE_DATA = '../../data/rt_state/rt_state.csv'
+RT_COUNTY_DATA = '../data/rt_county/rt_county.csv'
+RT_STATE_DATA = '../data/rt_state/rt_state.csv'
+
+rt_color_palette = [
+#     '#A1A1A1',
+    '#E1E1E1',
+    '#FAE6DA',
+    '#E1BCB3',
+    '#C8938C',
+    '#B16A67',
+    '#9A4342',
+    '#842421'
+]
+
+ckm_color_palette = [
+    'rgb(208,209,230)',
+    'rgb(232,189,233)',
+    'rgb(222,159,223)',
+    'rgb(202,100,204)',
+    'rgb(168,56,170)',
+    'rgb(138,46,140)',
+    'rgb(124,41,125)',
+    'rgb(109,36,111)',
+    'rgb(95,32,96)',
+    'rgb(66,22,66)',
+    'rgb(51,17,52)',
+]
+
+color_palette = ckm_color_palette
+
+custom_color_scale = []
+for i,colors in enumerate(color_palette):
+    custom_color_scale += [[i/len(color_palette), colors]]
+    custom_color_scale += [[(i+1)/len(color_palette), colors]]
+
 
 def set_up_defaults(
         rt_county_data_path=RT_COUNTY_DATA,
@@ -58,9 +91,9 @@ def set_up_defaults(
     
     if not os.path.exists(STATE_GEOJSON_DIR):
         os.mkdir(STATE_GEOJSON_DIR)
-    myzip = requests.get('https://www2.census.gov/geo/tiger/GENZ2018/shp/cb_2018_us_state_20m.zip')
-    with zipfile.ZipFile(io.BytesIO(myzip.content), 'r') as zip_ref:
-        zip_ref.extractall(STATE_GEOJSON_DIR)
+        myzip = requests.get('https://www2.census.gov/geo/tiger/GENZ2018/shp/cb_2018_us_state_20m.zip')
+        with zipfile.ZipFile(io.BytesIO(myzip.content), 'r') as zip_ref:
+            zip_ref.extractall(STATE_GEOJSON_DIR)
 
     for f in os.listdir(STATE_GEOJSON_DIR):
         if ('.shp' in f) and ('.shp.' not in f):
@@ -78,6 +111,7 @@ def set_up_defaults(
     return rt_county_df, rt_state_df, state_geojson_df, county_geojson_df, DATE_SUBSET
 
 
+
 def animate_country(
     data_df,
     geojson_df,
@@ -87,7 +121,8 @@ def animate_country(
     featureidkey='properties.id',
     animate=False,
     locations='countyFIPS',
-    save_path=None
+    save_path=None,
+    scope='usa'
     ):
 
     if not animate:
@@ -99,14 +134,17 @@ def animate_country(
             geojson=ast.literal_eval(geojson_df.to_json()), 
             locations=locations, 
             color=disp_col,
-            color_continuous_scale=[[0., 'rgb(0,255,0)'], [1.0, 'rgb(50,50,50)']],
+            color_continuous_scale=custom_color_scale,
             #animation_frame=None,
             range_color=(data_df[disp_col].quantile(q=0.05), data_df[disp_col].quantile(q=0.95)),
             hover_name='region',
             labels={disp_col: f'R_t ({disp_col})'},
             featureidkey=featureidkey,
-            scope='usa'
+            scope=scope
         )
+
+        if scope is None:
+            fig.update_geos(fitbounds="locations", visible=False)
 
         fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
@@ -119,24 +157,36 @@ def animate_country(
             geojson=ast.literal_eval(geojson_df.to_json()), 
             locations=locations, 
             color=disp_col,
-            color_continuous_scale=[[0., 'rgb(0,255,0)'], [1.0, 'rgb(50,50,50)']],
+            color_continuous_scale=custom_color_scale,
             animation_frame=date_col,
             range_color=(data_df[disp_col].quantile(q=0.05), data_df[disp_col].quantile(q=0.95)),
             hover_name='region',
             labels={disp_col: f'R_t ({disp_col})'},
             featureidkey=featureidkey,
-            scope='usa'
+            scope=scope
         )
 
+        if scope is None:
+            fig.update_geos(fitbounds="locations", visible=False)
         fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
     if save_path is not None:
         plot(
             fig, 
-            filename=save_path, 
+            filename=save_path,
+            include_plotlyjs='cdn', 
             include_mathjax='cdn', 
             auto_open=False
         )
+        with open(save_path, 'r') as f:
+            text = f.read()
+            text = text.replace\
+            ('<head><meta charset="utf-8" /></head>',
+            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /></head>')
+        
+        with open(save_path, 'w+') as f:
+            f.write(text)
+
 
     return fig
 
@@ -167,7 +217,7 @@ def animate_state(data_df,
 #         geojson=ast.literal_eval(geojson_subset.to_json()), 
         locations=locations, 
         color=disp_col,
-        color_continuous_scale=[[0., 'rgb(0,255,0)'], [1.0, 'rgb(0,0,0)']],
+        color_continuous_scale=custom_color_scale,
         animation_frame=date_col,
         range_color=(state_df[disp_col].quantile(0.05), 
                      state_df[disp_col].quantile(0.95)),
@@ -183,9 +233,19 @@ def animate_state(data_df,
         plot(
             fig, 
             filename=save_path, 
+            include_plotlyjs='cdn', 
             include_mathjax='cdn', 
             auto_open=False
         )
+        with open(save_path, 'r') as f:
+            text = f.read()
+            text = text.replace\
+            ('<head><meta charset="utf-8" /></head>',
+            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /></head>')
+        
+        with open(save_path, 'w+') as f:
+            f.write(text)
+
 
     return fig
 
@@ -246,9 +306,19 @@ def map_rt(
         plot(
             fig, 
             filename=save_path, 
+            include_plotlyjs='cdn', 
             include_mathjax='cdn', 
             auto_open=False
         )
+        with open(save_path, 'r') as f:
+            text = f.read()
+            text = text.replace\
+            ('<head><meta charset="utf-8" /></head>',
+            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /></head>')
+        
+        with open(save_path, 'w+') as f:
+            f.write(text)
+
 
     return fig
 
@@ -263,7 +333,7 @@ def rt_live_error_plot(rt_df,
     subset_df = rt_df[rt_df[filter_column]==filter_field]
 
     subset_df.loc[:, 'error_y_plus'] = subset_df['upper_90'] - subset_df['mean']
-    subset_df.loc[:,'error_y_minus'] = subset_df['mean'] - subset_df[lower_thresh]
+    subset_df.loc[:,'error_y_minus'] = subset_df['mean'] - subset_df['lower_90']
     subset_df.loc[:,'color'] = (subset_df['mean'] >= 1).map({True: 'High Risk', False: 'Low/Moderate Risk'})
     fig = px.scatter(
         data_frame=subset_df.loc[subset_df.date == subset_df.date.max(), :].sort_values('mean'),
@@ -281,9 +351,19 @@ def rt_live_error_plot(rt_df,
         plot(
             fig, 
             filename=save_path, 
+            include_plotlyjs='cdn', 
             include_mathjax='cdn', 
             auto_open=False
         )
+        with open(save_path, 'r') as f:
+            text = f.read()
+            text = text.replace\
+            ('<head><meta charset="utf-8" /></head>',
+            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /></head>')
+        
+        with open(save_path, 'w+') as f:
+            f.write(text)
+
 
     return fig
 
@@ -358,7 +438,7 @@ def rt_dashboard(
             'valueformat':'0.3f',
             'font':{
                 'color': '#3D9970' if (rt_df[disp_col].tolist()[-1] <1) else '#FF4136',
-                'size' : 22
+                'size' : 23
             }
         }
         ),
@@ -429,8 +509,18 @@ def rt_dashboard(
         plot(
             fig, 
             filename=save_path, 
+            include_plotlyjs='cdn', 
             include_mathjax='cdn', 
             auto_open=False
         )
+        with open(save_path, 'r') as f:
+            text = f.read()
+            text = text.replace\
+            ('<head><meta charset="utf-8" /></head>',
+            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /></head>')
+        
+        with open(save_path, 'w+') as f:
+            f.write(text)
+
 
     return fig
