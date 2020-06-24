@@ -138,7 +138,7 @@ def animate_country(
             #animation_frame=None,
             range_color=(data_df[disp_col].quantile(q=0.05), data_df[disp_col].quantile(q=0.95)),
             hover_name='region',
-            labels={disp_col: f'R_t ({disp_col})'},
+            labels={disp_col: f'Rt ({disp_col})'},
             featureidkey=featureidkey,
             scope=scope
         )
@@ -146,7 +146,23 @@ def animate_country(
         if scope is None:
             fig.update_geos(fitbounds="locations", visible=False)
 
-        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        fig.update_layout(
+            dragmode=False,
+            margin={"r":0,"t":0,"l":0,"b":0},
+            xaxis=dict(fixedrange= True),
+            yaxis=dict(fixedrange= True),
+            hoverlabel=dict(
+                bgcolor="white", 
+                font_size=14, 
+                font_family="Nunito, Regular",
+                font_color="black"
+            ),
+            font=dict(
+                family="Nunito, Regular",
+                size=14,
+                color="black"
+            )
+        )
 
 # return data_df, geojson_df, date_list, disp_col, date_col, featureidkey, locations
     else:
@@ -161,14 +177,30 @@ def animate_country(
             animation_frame=date_col,
             range_color=(data_df[disp_col].quantile(q=0.05), data_df[disp_col].quantile(q=0.95)),
             hover_name='region',
-            labels={disp_col: f'R_t ({disp_col})'},
+            labels={disp_col: f'Rt ({disp_col})'},
             featureidkey=featureidkey,
             scope=scope
         )
 
         if scope is None:
             fig.update_geos(fitbounds="locations", visible=False)
-        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        fig.update_layout(
+            dragmode=False,
+            xaxis=dict(fixedrange= True),
+            yaxis=dict(fixedrange= True),
+            margin={"r":0,"t":0,"l":0,"b":0},
+            font=dict(
+                family="Nunito, Regular",
+                size=14,
+                color="black"
+            ),
+            hoverlabel=dict(
+                bgcolor="white", 
+                font_size=14, 
+                font_family="Nunito, Regular",
+                font_color="black"
+            )
+        )
 
     if save_path is not None:
         plot(
@@ -182,7 +214,7 @@ def animate_country(
             text = f.read()
             text = text.replace\
             ('<head><meta charset="utf-8" /></head>',
-            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /></head>')
+            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /><link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,400;0,600;0,700;1,300&display=swap" rel="stylesheet"></head>')
         
         with open(save_path, 'w+') as f:
             f.write(text)
@@ -222,12 +254,28 @@ def animate_state(data_df,
         range_color=(state_df[disp_col].quantile(0.05), 
                      state_df[disp_col].quantile(0.95)),
         hover_name='region',
-        labels={disp_col:f'R_t ({disp_col})'},
+        labels={disp_col:f'Rt ({disp_col})'},
         featureidkey=featureidkey,
     )
 
     fig.update_geos(fitbounds="locations", visible=False)
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    fig.update_layout(
+        dragmode=False,
+        margin={"r":0,"t":0,"l":0,"b":0},
+        xaxis=dict(fixedrange= True),
+        yaxis=dict(fixedrange= True),
+        hoverlabel=dict(
+            bgcolor="white", 
+            font_size=14, 
+            font_family="Nunito, Regular",
+            font_color="black"
+        ),
+        font=dict(
+            family="Nunito, Regular",
+            size=14,
+            color="black"
+        )
+    )
 
     if save_path is not None:
         plot(
@@ -241,7 +289,7 @@ def animate_state(data_df,
             text = f.read()
             text = text.replace\
             ('<head><meta charset="utf-8" /></head>',
-            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /></head>')
+            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /><link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,400;0,600;0,700;1,300&display=swap" rel="stylesheet"></head>')
         
         with open(save_path, 'w+') as f:
             f.write(text)
@@ -314,7 +362,7 @@ def map_rt(
             text = f.read()
             text = text.replace\
             ('<head><meta charset="utf-8" /></head>',
-            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /></head>')
+            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /><link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,400;0,600;0,700;1,300&display=swap" rel="stylesheet"></head>')
         
         with open(save_path, 'w+') as f:
             f.write(text)
@@ -385,9 +433,10 @@ def rt_dashboard(
             [{'colspan':3, 'rowspan':2,'type':'xy'}, None,None],
                 [None, None,None]],
         subplot_titles=(
-            r"$\text{R}_t$",
-            r"$\text{Change}$",
-            r"$\text{Risk}$", 
+            # r"$\text{R}_t$",
+            # r"$\text{Change}$",
+            # r"$\text{Risk}$", 
+            'Rt', 'Change', 'Risk',
             (rt_df.region.tolist()[0])
         )
     )
@@ -438,7 +487,8 @@ def rt_dashboard(
             'valueformat':'0.3f',
             'font':{
                 'color': '#3D9970' if (rt_df[disp_col].tolist()[-1] <1) else '#FF4136',
-                'size' : 23
+                'size' : 23,
+                'family': 'Nunito, Regular'
             }
         }
         ),
@@ -458,7 +508,8 @@ def rt_dashboard(
                 'color': '#3D9970'
             },
             'font':{
-                'size' : 22
+                'size' : 22,
+                'family': 'Nunito, Regular',
             }
         },
         value = rt_df[disp_col].tolist()[-1],
@@ -492,10 +543,12 @@ def rt_dashboard(
         value = rt_df[disp_col].tolist()[-1],
         number={
             'valueformat':'0.3f',
+            # using this string formattting prevents the font from being applied
             'prefix' : r'$\textbf{'+val+'}$',
             'font':{
                 'color': col,
-                'size':30
+                'size':22,
+                'family': 'Nunito, Regular'
             }
         }
         ),
@@ -503,7 +556,26 @@ def rt_dashboard(
         col=3
     )
 
-    fig.update_layout(showlegend=False, title_text="", width=900, height=600)
+    fig.update_layout(
+        dragmode=False,
+        xaxis=dict(fixedrange= True),
+        yaxis=dict(fixedrange= True),
+        showlegend=False, 
+        title_text="", 
+        width=900, 
+        height=600,                
+        font=dict(
+            family="Nunito, Regular",
+            size=14,
+            color="black"
+        ),
+        hoverlabel=dict(
+            bgcolor="white", 
+            font_size=14, 
+            font_family="Nunito, Regular",
+            font_color="black"
+        )
+    )
     
     if save_path is not None:
         plot(
@@ -517,7 +589,7 @@ def rt_dashboard(
             text = f.read()
             text = text.replace\
             ('<head><meta charset="utf-8" /></head>',
-            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /></head>')
+            '<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /><link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,400;0,600;0,700;1,300&display=swap" rel="stylesheet"></head>')
         
         with open(save_path, 'w+') as f:
             f.write(text)

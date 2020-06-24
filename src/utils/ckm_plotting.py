@@ -154,6 +154,11 @@ def gen_dropdown(figure_list=None,
                                      in zip(figure_list[default_plot]['layout'].keys(),
                                             figure_list[default_plot]['layout'].values())},
                                       barmode=barmode,
+                                      font=dict(
+                                        family="Nunito, Regular",
+                                        size=18,
+                                        color="black"
+                                      ),
                                       updatemenus=[
                                       dict(active=default_plot,
                                            buttons=buttons,
@@ -168,7 +173,16 @@ def gen_dropdown(figure_list=None,
         if annotations:
             annotation_list=list(master_figure['layout']['annotations'])
             annotation_list.extend(annotations)
-            master_figure.update_layout(annotations=annotation_list)
+            master_figure.update_layout(
+                annotations=dict(
+                    annotation_list,
+                    font=dict(
+                        family="Nunito, Regular",
+                        size=14,
+                        color="black"
+                    )
+                )
+            )
         
         return master_figure
     
@@ -300,8 +314,19 @@ def gen_dropdown(figure_list=None,
             master_figure.update_layout(barmode=barmode,
                                         xaxis=dict(automargin=True),
                                         yaxis=dict(automargin=True),
+                                        font=dict(
+                                            family="Nunito, Regular",
+                                            size=18,
+                                            color="black"
+                                        ),
                                         legend=dict(traceorder='normal'),
-                                        annotations=annotations,
+                                        annotations=dict(
+                                            font=dict(
+                                                family="Nunito, Regular",
+                                                size=18,
+                                                color="black"
+                                            )
+                                        ),
                                         updatemenus=[dict(active=default_plot,
                                                           buttons=buttons,
                                                           direction="down",
@@ -313,8 +338,15 @@ def gen_dropdown(figure_list=None,
                                                           yanchor="top")],
                                          **kwargs)
             if float(re.search('^[^\.]*\.[^\.]*', plotly.__version__).group(0)) >= 4.2:
-                master_figure.update_layout(uniformtext=dict(minsize=6,
-                                                             mode='hide'))
+                master_figure.update_layout(
+                    uniformtext=dict(minsize=6,
+                    mode='hide'),
+                    font=dict(
+                        family="Nunito, Regular",
+                        size=18,
+                        color="black"
+                    )
+                )
 
             return master_figure
     
