@@ -56,7 +56,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--county_level_case_history', 
     type=str, 
     help='File Containing Case History by Date/Day',
-    default='../data/county_level/covid_confirmed_usafacts.csv'
+    default='../data/uk/cases_uk.csv'
 )
 parser.add_argument('--county_level_population', 
     type=str,
@@ -93,7 +93,7 @@ def create_case_pop_df_uk(
                 pop_fips_col='areaCode',
                 case_fips_col='areaCode',
                 case_county_col='county',
-                case_state_col='State'
+                case_state_col='state'
     
       ):
 
@@ -105,7 +105,7 @@ def create_case_pop_df_uk(
     ltla_region_map = mapping_df[['LAD18CD','RGN18NM']]\
         .drop_duplicates().set_index('LAD18CD').to_dict()['RGN18NM']
 
-    uk_cases_df['State'] = uk_cases_df['areaCode'].map(ltla_region_map)
+    uk_cases_df['State'] = uk_cases_df['areaCode'].map(ltla_region_map).str.upper()
     uk_cases_df['state'] = uk_cases_df['areaCode'].map(ltla_region_map)
     uk_cases_df = uk_cases_df.rename(columns={'specimenDate':'date'})
     uk_cases_df['date'] = pd.to_datetime(uk_cases_df['date'])

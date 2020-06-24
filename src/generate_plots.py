@@ -48,8 +48,10 @@ def state_map(st, path):
 
 
 def add_js_header(text):
-    text = text.replace('<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /></head>',
+    text = text.replace('<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />',
          '''<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+         <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;700&display=swap" rel="stylesheet">
+         <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,400;0,600;0,700;1,300&display=swap" rel="stylesheet">
             <script type="text/javascript">
                 function goToNewPage()
                 {
@@ -59,7 +61,7 @@ def add_js_header(text):
                     }
                 }
             </script>
-        </head>
+        
         ''')
 
     return text
@@ -86,7 +88,11 @@ def add_style_header(text):
 
     text = text.replace('<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />',
          '''<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+         <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,400;0,600;0,700;1,300&display=swap" rel="stylesheet">
         <style>
+                body{
+                font-family: 'Nunito', sans-serif;
+                }
                 ul {
                 list-style-type: none;
                 margin: 0;
@@ -113,6 +119,51 @@ def add_style_header(text):
 
                 .active {
                 background-color: #508668;
+                font-family: 'Nunito';
+                font-weight: 700;
+                }
+                .modebar{
+                display: none !important;
+                }
+                input{
+                display: inline-block;
+                background: #518668;
+                border-radius: 3px;
+                cursor: pointer;
+                color: #fff;
+                fill: #fff;
+                min-height: 1rem;
+                line-height: 1;
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+                letter-spacing: 1.25%;
+                align-items: center;
+                border: none;
+                box-shadow: none;
+                text-align: center;
+                text-transform: uppercase;
+                transition: all 0.15s ease-out; 
+                font-family: 'Nunito', sans-serif;
+                font-weight: 700;
+                margin-right: 1rem;
+                }
+                #list{
+                min-width: 20rem;
+                background: #E2F1F8;
+                border: 1px solid #A8c3B3;
+                transition: all 0.1s ease-in-out;
+                color: #212121;
+                height: 3rem;
+                font-size: 16px;
+                }
+                select {
+                background-color: #fff;
+                line-height: initial;
+                max-width: initial;
+                border-radius: 3px 3px 0 0;
+                margin-top: 3rem;
+                font-family: 'Nunito', sans-serif;
+                background: #E2F1F8;
                 }
         </style>
         '''
@@ -198,8 +249,8 @@ if __name__ == '__main__':
     
             text = f.read()
             
-            text = add_js_header(text)
             text = add_style_header(text)
+            text = add_js_header(text)
             joined_list = ["<option value='none' selected>Select Options...</option>"]
             for st in rt_county_df['state'].sort_values().unique().tolist():
                 joined_list.append(f'<option value="../state/state_{st}.html">{st}</option>')
@@ -247,8 +298,8 @@ if __name__ == '__main__':
             with open(STATE_DIR+f'state_{st}.html', 'r') as fil:
                 text = fil.read()
                 
-                text = add_js_header(text)
                 text = add_style_header(text)
+                text = add_js_header(text)
                 joined_list = ["<option value='none' selected>Select Options...</option>"]
                 for county in rt_county_df[rt_county_df['state']==st]['region']\
                     .sort_values().unique().tolist():
@@ -272,6 +323,10 @@ if __name__ == '__main__':
     if not os.path.exists(COUNTY_DIR):
         os.mkdir(COUNTY_DIR)
 
+    region_state_map = rt_county_df[['region','state']]\
+        .drop_duplicates().set_index('region').to_dict()['state']
+
+
     for county in tqdm(rt_county_df['region'].unique().tolist()):
 
         fig = rt_dashboard(
@@ -283,10 +338,10 @@ if __name__ == '__main__':
 
         with open(FILE, 'r') as fil:
             text = fil.read()
-            text = add_js_header(text)
             text = add_style_header(text)
+            text = add_js_header(text)
             
-            text = add_navbar(text, state= county.split()[-1], county=county)
+            text = add_navbar(text, state=region_state_map[county], county=county)
             
         with open(FILE, 'w') as fil:
             fil.write(text)

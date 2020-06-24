@@ -298,7 +298,7 @@ def create_case_pop_df(
                 pop_fips_col='fips',
                 case_fips_col='countyFIPS',
                 case_county_col='County Name',
-                case_state_col='State'
+                case_state_col='state'
     
       ):
     # Population Data at county level
@@ -424,7 +424,8 @@ def regional_rt_model(subset_df,
         if (results is not None):
             results.to_csv(output_path)
         else:
-            err_list.append(region)
+            pass
+            # err_list.append(region)
 
     return results, err_list 
 

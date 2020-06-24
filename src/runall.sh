@@ -1,15 +1,29 @@
  
 ./cleanup.sh
-./get_county_data.sh
 ./get_rt.sh
+./get_county_data.sh
 
-## Creating State Level Files
-python generate_rt.py --state_level_only  --output_path='../data/rt_state/'
-python generate_rt.py  --output_path='../data/rt_county/'
+# To calculate Rts for all counties in a state, run the generate_rt.py files
+# You can add multiple states to your list
+python generate_rt.py --filtered_states DE --output_path='../data/rt_county/'
+# To instead calculate Rt for the entire state, add the --state_level_only flag
+python generate_rt.py --filtered_states DE --state_level_only --output_path='../data/rt_state/'
 
-## Combining the files into a consolidated file for Simulation Use
+# To consolidate the various states you ran above into one file run the commands below
 python generate_rt_combine.py --files_path='../data/rt_state/' --state_level
 python generate_rt_combine.py --files_path='../data/rt_county/'
 
-## Combining the files into a consolidated file for Simulation Use
-python generate_plots.py --rt_county_file_path='../data/rt_county/rt_county.csv'
+# Finally, to create your HTML output plots, run the command below
+python generate_plots.py --country_name="USA"
+
+# python generate_rt_uk.py --filtered_states 'NORTH EAST' --output_path='../data/uk/rt_county/'
+# # To instead calculate Rt for the entire state, add the --state_level_only flag
+# python generate_rt_uk.py --filtered_states 'NORTH EAST' --state_level_only --output_path='../data/uk/rt_state/'
+
+# # To consolidate the various states you ran above into one file run the commands below
+# python generate_rt_combine_uk.py --files_path='../data/uk/rt_state/' --state_level
+# python generate_rt_combine_uk.py --files_path='../data/uk/rt_county/'
+
+# # Finally, to create your HTML output plots, run the command below
+# python generate_plots_uk.py --country_name="UK"
+
