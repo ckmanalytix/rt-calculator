@@ -3,6 +3,8 @@ import os
 import argparse
 import gc
 
+import numpy as np
+
 from generate_rt import create_case_pop_df
 
 parser = argparse.ArgumentParser()
@@ -48,7 +50,7 @@ if __name__ == '__main__':
         label = 'county'
         output_file = OUTPUT_PATH+'rt_county.csv'
 
-    cases_pop_df = create_case_pop_df(CASES_PATH, POPULATION_PATH)
+    cases_pop_df = create_case_pop_df(CASES_PATH, POPULATION_PATH, cutoff=0)
 
     print ('Combining Files...')
 
@@ -72,6 +74,27 @@ if __name__ == '__main__':
         rt_df['state'] = rt_df['region'].map(state_mapping)
         rt_df['county'] = rt_df['region'].map(county_mapping)
 
+        rt_df['date'] = pd.to_datetime(rt_df['date'], errors='coerce')
+        DATE_LIST = np.sort(rt_df['date'].dropna().unique().tolist())
+
+        cases_pop_df['date'] = pd.to_datetime(cases_pop_df['date'], errors='coerce')
+        cases_pop_df = cases_pop_df.loc[cases_pop_df['date'].isin(DATE_LIST), :]
+        
+        rt_df = pd.merge(
+            cases_pop_df[['countyFIPS','County_State','date', 'state', 'stateFIPS']],
+            rt_df,
+            how='left',
+            left_on=['County_State'],
+            right_on=['region'],
+        ).drop_duplicates()
+        rt_df['date_y'] = pd.to_datetime(rt_df['date_y'].fillna(rt_df['date_x']))
+        rt_df['region'] = rt_df['region'].fillna(rt_df['County_State'])
+        rt_df = rt_df[rt_df['date_x']==rt_df['date_y']]
+        for col in rt_df.filter(regex='_y').columns.tolist():
+            rt_df = rt_df.drop(col,axis=1)
+            rt_df = rt_df.rename(columns={col.replace('_y','_x'): col.replace('_y','')})
+
+        rt_df = rt_df.sort_values(['countyFIPS','date'])
 
     rt_df.to_csv(output_file)
     del rt_df

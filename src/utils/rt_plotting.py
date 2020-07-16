@@ -136,11 +136,13 @@ def animate_country(
             color=disp_col,
             color_continuous_scale=custom_color_scale,
             #animation_frame=None,
-            range_color=(data_df[disp_col].quantile(q=0.05), data_df[disp_col].quantile(q=0.95)),
+            # range_color=(data_df[disp_col].quantile(q=0.05), data_df[disp_col].quantile(q=0.95)),
+            range_color=(0.5,1.7),
             hover_name='region',
             labels={disp_col: f'Rt ({disp_col})'},
             featureidkey=featureidkey,
-            scope=scope
+            scope=scope,
+            title=f"Last Updated: {data_df[date_col].max()}"
         )
 
         if scope is None:
@@ -175,11 +177,13 @@ def animate_country(
             color=disp_col,
             color_continuous_scale=custom_color_scale,
             animation_frame=date_col,
-            range_color=(data_df[disp_col].quantile(q=0.05), data_df[disp_col].quantile(q=0.95)),
+            # range_color=(data_df[disp_col].quantile(q=0.05), data_df[disp_col].quantile(q=0.95)),
+            range_color=(0.5,1.7),
             hover_name='region',
             labels={disp_col: f'Rt ({disp_col})'},
             featureidkey=featureidkey,
-            scope=scope
+            scope=scope,
+            title=f"Last Updated: {data_df[date_col].max()}"
         )
 
         if scope is None:
@@ -243,19 +247,29 @@ def animate_state(data_df,
     if not animate:
         state_df = state_df.loc[state_df[date_col]==state_df[date_col].max(), :]
 
+    ###
+    # Bug Fix To Fix Boundary Issue
+    state_df['hover_text'] = state_df[disp_col].apply(lambda x: f'{x:.2f}' if str(x)!='nan' else 'N/A')
+    ###
+
     fig = px.choropleth(
-        data_frame=state_df, 
+        # data_frame=state_df, 
+        data_frame=state_df.fillna(-1), 
         geojson=ast.literal_eval(geojson_df.to_json()), 
 #         geojson=ast.literal_eval(geojson_subset.to_json()), 
         locations=locations, 
         color=disp_col,
         color_continuous_scale=custom_color_scale,
         animation_frame=date_col,
-        range_color=(state_df[disp_col].quantile(0.05), 
-                     state_df[disp_col].quantile(0.95)),
+        # range_color=(state_df[disp_col].quantile(0.05), 
+        #              state_df[disp_col].quantile(0.95)),
+        range_color=(0.5,1.7),
         hover_name='region',
-        labels={disp_col:f'Rt ({disp_col})'},
+        # labels={disp_col:f'Rt ({disp_col})'},
+        labels={'hover_text':f'Rt ({disp_col})'},
         featureidkey=featureidkey,
+        hover_data={'hover_text':True, 'countyFIPS':False, disp_col:False},
+        title=f"Last Updated: {state_df[date_col].max()}"
     )
 
     fig.update_geos(fitbounds="locations", visible=False)
