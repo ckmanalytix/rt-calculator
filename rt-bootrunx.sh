@@ -99,6 +99,12 @@ python generate_plots_uk.py --rt_county_file_path='../data/uk/rt_county/rt_count
 
 cd ../..
 
+echo "# Adding downloadable files to cloudfront paths."
+
+cd rt-calculator/src/
+./consolidate_rt_vals.sh
+cd ../..
+
 echo $(date)
 echo "# done."
 

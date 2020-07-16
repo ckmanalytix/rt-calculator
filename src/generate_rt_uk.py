@@ -93,7 +93,8 @@ def create_case_pop_df_uk(
                 pop_fips_col='areaCode',
                 case_fips_col='areaCode',
                 case_county_col='county',
-                case_state_col='state'
+                case_state_col='state',
+                cutoff=5
     
       ):
 
@@ -141,6 +142,10 @@ def create_case_pop_df_uk(
             center=True).mean(std=2).round()
         g['active_cases'] = g[cum_cases_col] - g[cum_cases_col].shift(14).fillna(0)
         append_list.append(g)
+
+        idx_start = np.searchsorted(g['new_cases'], cutoff)
+        append_list.append(g.iloc[idx_start:])
+
     cases_pop_df = pd.concat(append_list)
 
     del append_list

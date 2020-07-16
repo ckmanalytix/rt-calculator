@@ -205,6 +205,19 @@ def add_navbar(
 
     return text
     
+
+def fix_county_res(
+    text,
+    ):
+
+    text = text.replace(
+        'class="plotly-graph-div" style="height:600px; width:900px;"></div>',
+        'class="plotly-graph-div" style="height:80vh; width:100vw;">'
+    ).replace(
+        '</body>',
+        '\t\t</div>\n</body>'
+    )
+    return text
     
 
 
@@ -270,7 +283,7 @@ if __name__ == '__main__':
             text = add_style_header(text)
             text = add_js_header(text)
             joined_list = ["<option value='none' selected>Select Options...</option>"]
-            for st in rt_county_df['state'].sort_values().unique().tolist():
+            for st in rt_county_df.loc[rt_county_df['mean'].notnull() , 'state'].unique().tolist():
                 joined_list.append(f'<option value="../state/state_{st}.html">{st}</option>')
             
             text = dropdown_col(text, joined_list)
@@ -297,7 +310,8 @@ if __name__ == '__main__':
     #     print ("ENTERING POOL")
     #     results = pool.starmap(state_map, state_inputs) 
     err_list = []
-    for st in tqdm(rt_county_df['state'].unique().tolist()):
+    # for st in tqdm(rt_county_df['state'].unique().tolist()):
+    for st in tqdm(rt_county_df.loc[rt_county_df['mean'].notnull() , 'state'].unique().tolist()):
         try:
             # fig = map_rt(
             #     'county',
@@ -320,7 +334,7 @@ if __name__ == '__main__':
             print (f'\t{st} threw an error: {str(e)}')
             err_list.append(st)
 
-    for st in rt_county_df['state'].unique().tolist():
+    for st in rt_county_df.loc[rt_county_df['mean'].notnull() , 'state'].unique().tolist():
         if st not in err_list:
             with open(STATE_DIR+f'state_{st}.html', 'r') as fil:
                 text = fil.read()
@@ -328,8 +342,12 @@ if __name__ == '__main__':
                 text = add_style_header(text)
                 text = add_js_header(text)
                 joined_list = ["<option value='none' selected>Select Options...</option>"]
-                for county in rt_county_df[rt_county_df['state']==st]['region']\
-                    .sort_values().unique().tolist():
+                
+                county_list = rt_county_df[(rt_county_df['state']==st) & \
+                    (rt_county_df['mean'].notnull())]['region']\
+                    .sort_values().unique().tolist()
+
+                for county in county_list:
                     county_str = '_'.join(county.split())
                     joined_list.append\
                         (f'<option value="../county/county_{county_str}.html">{county}</option>')
@@ -350,6 +368,9 @@ if __name__ == '__main__':
     if not os.path.exists(COUNTY_DIR):
         os.mkdir(COUNTY_DIR)
 
+    ## Bug Fix Zero Case Error
+    rt_county_df = rt_county_df.dropna(subset=['mean'])
+    
     region_state_map = rt_county_df[['region','state']]\
         .drop_duplicates().set_index('region').to_dict()['state']
 
@@ -369,7 +390,8 @@ if __name__ == '__main__':
             text = add_js_header(text)
             
             text = add_navbar(text, state=region_state_map[county], county=county)
-            
+            text = fix_county_res(text)
+
         with open(FILE, 'w') as fil:
             fil.write(text)
 
