@@ -142,7 +142,7 @@ def animate_country(
             labels={disp_col: f'Rt ({disp_col})'},
             featureidkey=featureidkey,
             scope=scope,
-            title=f"Last Updated: {data_df[date_col].max()}"
+            # title=f"Last Updated: {data_df[date_col].max()}<br>"
         )
 
         if scope is None:
@@ -183,7 +183,7 @@ def animate_country(
             labels={disp_col: f'Rt ({disp_col})'},
             featureidkey=featureidkey,
             scope=scope,
-            title=f"Last Updated: {data_df[date_col].max()}"
+            # title=f"Last Updated: {data_df[date_col].max()}"
         )
 
         if scope is None:
@@ -269,7 +269,7 @@ def animate_state(data_df,
         labels={'hover_text':f'Rt ({disp_col})'},
         featureidkey=featureidkey,
         hover_data={'hover_text':True, 'countyFIPS':False, disp_col:False},
-        title=f"Last Updated: {state_df[date_col].max()}"
+        # title=f"Last Updated: {state_df[date_col].max()}"
     )
 
     fig.update_geos(fitbounds="locations", visible=False)
@@ -290,6 +290,10 @@ def animate_state(data_df,
             color="black"
         )
     )
+
+    if animate:
+        fig['layout']['sliders'][0]['y']=2
+        fig['layout']['updatemenus'][0]['y']=2
 
     if save_path is not None:
         plot(
@@ -330,7 +334,8 @@ def map_rt(
         if map_view=='county':
             fig = animate_state(state=state, 
                         data_df=rt_county_df,
-                        geojson_df=county_geojson_df.dropna(subset=['STATE_NAME']),
+                        geojson_df=county_geojson_df[county_geojson_df['STATE_NAME']==state]\
+                            .dropna(subset=['STATE_NAME']),
                         date_list=DATE_SUBSET,
                         disp_col=disp_col,
                         animate=animate

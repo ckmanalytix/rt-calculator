@@ -220,6 +220,19 @@ def fix_county_res(
         '\t\t</div>\n</body>'
     )
     return text
+
+def fix_state_res(
+    text,
+    ):
+
+    text = text.replace(
+        'class="plotly-graph-div" style="height:100%; width:100%;"></div>',
+        'class="plotly-graph-div" style="height:80vh; width:100vw;">'
+    ).replace(
+        '</body>',
+        '\t\t</div>\n</body>'
+    )
+    return text
     
 
 
@@ -326,7 +339,7 @@ if __name__ == '__main__':
                 
                 text = dropdown_col(text, joined_list)
                 text = add_navbar(text, state=st)
-            
+                text = fix_state_res(text)
             with open(STATE_DIR+f'state_{st}.html', 'w') as fil:
                 fil.write(text)
             

@@ -103,6 +103,12 @@ echo "# Adding downloadable files to cloudfront paths."
 
 cd rt-calculator/src/
 ./consolidate_rt_vals.sh
+
+# Optional line below; Fills county level data with State Data 
+# Used only for Healthcare companies internally
+python healthcare_co.py --output_level_file_path='../data/rt_county/rt_county_cleaned.csv' --state_level_file_path='../data/rt_state/rt_state.csv' --county_level_file_path='../data/rt_county/rt_county.csv'
+python healthcare_co.py --output_level_file_path='../data/uk/rt_county/rt_county_cleaned.csv' --state_level_file_path='../data/uk/rt_state/rt_state.csv' --county_level_file_path='../data/uk/rt_county/rt_county.csv'
+
 cd ../..
 
 echo $(date)
