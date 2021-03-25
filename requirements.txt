@@ -14,7 +14,7 @@ plotly==4.7
 pymc3==3.8
 pytest==5.4
 pytest-cov==2.8
-pyyaml==5.3
+pyyaml==5.4
 requests==2.23
 seaborn==0.10
 tqdm==4.46
