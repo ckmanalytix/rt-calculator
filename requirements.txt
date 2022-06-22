@@ -8,7 +8,7 @@
 arviz==0.7
 geopandas==0.7
 matplotlib==3.2.1
-numpy==1.18.4
+numpy==1.22.0
 pandas==1.0.3
 plotly==4.7
 pymc3==3.8
